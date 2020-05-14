@@ -1,16 +1,8 @@
 #!/bin/bash
 
-IPTABLES_CHAIN_NAME="Drop-From-TOR1";
+IPTABLES_CHAIN_NAME="torbans";
 BAD_IPS_FILE="badips.db"
 BAD_IPS_URL="https://www.dan.me.uk/torlist"
-
-MAIL_FROM="report.to@domain.com";
-MAIL_TO="Report To <report.to@domain.com>";
-MAIL_SUBJECT="[BAN_TOR_IPS] Execution failed";
-MAIL_BODY="Unable to download file from $BAD_IPS_URL";
-MAIL_USER="username";
-MAIL_PASSWORD="password";
-MAIL_SERVER="correo.report.to:2525";
 
 WGET_LOG="/tmp/wget.log"
 
@@ -18,7 +10,6 @@ WGET_LOG="/tmp/wget.log"
 wget_output=$(wget -q $BAD_IPS_URL -O $BAD_IPS_FILE -o $WGET_LOG)
 if [ $? -ne 0 ]; then
 	echo "Unable to download file from $BAD_IPS_URL"
-	sendEmail -q -o message-content-type=text tls=auto -f $MAIL_FROM -t $MAIL_TO -s $MAIL_SERVER -xu $MAIL_USER -xp $MAIL_PASSWORD -u $MAIL_SUBJECT -m $MAIL_BODY -a $WGET_LOG
 	exit 1
 fi
 
@@ -57,7 +48,3 @@ done < $BAD_IPS_FILE
 
 iptables -A $IPTABLES_CHAIN_NAME -j RETURN
 ip6tables -A $IPTABLES_CHAIN_NAME -j RETURN
-
-# Check everything was done correctly
-# iptables -n -L $IPTABLES_CHAIN_NAME
-# ip6tables -n -L $IPTABLES_CHAIN_NAME
